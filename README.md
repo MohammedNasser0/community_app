@@ -237,7 +237,7 @@ The original kit contains 30 mobile social-app screens and is presented as a fre
 
 ## GitHub Delivery Checklist
 
-- [ ] Public repository created.
+- [x] Public repository: [MohammedNasser0/community_app](https://github.com/MohammedNasser0/community_app).
 - [ ] Repository name/username follows the assignment's naming expectation.
 - [ ] Firebase configuration is connected to the intended project.
 - [ ] Firestore rules published.
@@ -258,4 +258,4 @@ Fixed the composer route to share its PostCubit, retained the draft after failed
 
 Three automated tests cover signup constraints, corrupt-cache recovery and post-cache round trips. Real-device biometric, Maps and Firebase integration evidence still requires execution against the intended configured project.
 
-Release currently uses the Android debug signing key for beta testing. Configure a private release keystore before production delivery. GitHub publishing is pending explicit approval. Firebase upload and distribution to two supplied tester addresses succeeded; tester acceptance and installation remain unverified. See [beta distribution record](docs/beta-distribution.md).
+Release currently uses the Android debug signing key for beta testing. Configure a private release keystore before production delivery. Source code is published at https://github.com/MohammedNasser0/community_app. Firebase upload and distribution to two supplied tester addresses succeeded; tester acceptance and installation remain unverified. See [beta distribution record](docs/beta-distribution.md).
