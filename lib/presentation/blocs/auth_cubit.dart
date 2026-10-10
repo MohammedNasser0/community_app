@@ -8,11 +8,11 @@ import '../../domain/usecases/sign_up.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit({required AuthRepository repository})
-    : _repository = repository,
-      _login = Login(repository: repository),
-      _signUp = SignUp(repository: repository),
-      super(const AuthInitial());
+  AuthCubit({
+    required this._repository,
+    required this._login,
+    required this._signUp,
+  }) : super(const AuthInitial());
 
   final AuthRepository _repository;
   final Login _login;
@@ -20,13 +20,13 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> checkAuthState() async {
     try {
-      final user = _repository.currentUser;
-
-      if (user == null) {
+      final firebaseUser = _repository.currentUser;
+      if (firebaseUser == null) {
         emit(const AuthUnauthenticated());
-      } else {
-        emit(AuthAuthenticated(user));
+        return;
       }
+      final stored = await _repository.getUser(firebaseUser.id);
+      emit(AuthAuthenticated(stored ?? firebaseUser));
     } catch (error) {
       emit(AuthError(FailureMessage.fromException(error)));
     }
@@ -34,11 +34,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> login({required String email, required String password}) async {
     emit(const AuthLoading());
-
     try {
-      final user = await _login(email: email, password: password);
-
-      emit(AuthAuthenticated(user));
+      emit(AuthAuthenticated(await _login(email: email, password: password)));
     } catch (error) {
       emit(AuthError(FailureMessage.fromException(error)));
     }
@@ -50,15 +47,12 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
   }) async {
     emit(const AuthLoading());
-
     try {
-      final user = await _signUp(
-        fullName: fullName,
-        email: email,
-        password: password,
+      emit(
+        AuthAuthenticated(
+          await _signUp(fullName: fullName, email: email, password: password),
+        ),
       );
-
-      emit(AuthAuthenticated(user));
     } catch (error) {
       emit(AuthError(FailureMessage.fromException(error)));
     }
@@ -72,4 +66,8 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthError(FailureMessage.fromException(error)));
     }
   }
+
+  User? get currentUser => state is AuthAuthenticated
+      ? (state as AuthAuthenticated).user
+      : _repository.currentUser;
 }

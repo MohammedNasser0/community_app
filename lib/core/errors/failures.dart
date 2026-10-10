@@ -1,36 +1,32 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FailureMessage {
+  FailureMessage._();
+
   static String fromException(Object error) {
     if (error is FirebaseAuthException) {
       switch (error.code) {
-        case 'invalid-email':
-          return 'Please enter a valid email address.';
-
-        case 'user-not-found':
-          return 'No account was found with this email.';
-
-        case 'wrong-password':
         case 'invalid-credential':
+        case 'wrong-password':
+        case 'user-not-found':
           return 'Email or password is incorrect.';
-
         case 'email-already-in-use':
           return 'This email is already registered.';
-
         case 'weak-password':
-          return 'Password is too weak. Use at least 6 characters.';
-
+          return 'Please choose a stronger password.';
+        case 'invalid-email':
+          return 'Please enter a valid email address.';
         case 'network-request-failed':
-          return 'Please check your internet connection.';
-
-        case 'too-many-requests':
-          return 'Too many attempts. Please try again later.';
-
+          return 'Network error. Check your connection and try again.';
         default:
-          return 'Authentication failed. Please try again.';
+          return error.message ?? 'Authentication failed. Please try again.';
       }
     }
 
-    return 'Something went wrong. Please try again.';
+    final message = error.toString();
+    if (message.contains('permission-denied')) {
+      return 'You do not have permission to perform this action.';
+    }
+    return message.replaceFirst('Exception: ', '');
   }
 }

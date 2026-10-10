@@ -8,21 +8,24 @@ class AuthTextField extends StatelessWidget {
     required this.icon,
     this.obscureText = false,
     this.keyboardType,
+    this.suffixIcon,
   });
-
   final TextEditingController controller;
   final String label;
   final IconData icon;
   final bool obscureText;
   final TextInputType? keyboardType;
-
+  final Widget? suffixIcon;
   @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
-    );
-  }
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    obscureText: obscureText,
+    keyboardType: keyboardType,
+    textInputAction: TextInputAction.next,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffixIcon,
+    ),
+  );
 }

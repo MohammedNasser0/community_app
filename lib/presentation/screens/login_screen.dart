@@ -1,131 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/utils/validators.dart';
 import '../blocs/auth_cubit.dart';
 import '../blocs/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import 'sign_up_screen.dart';
+import '../widgets/brand_header.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
+  final email = TextEditingController();
+  final password = TextEditingController();
+  bool obscure = true;
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    email.dispose();
+    password.dispose();
     super.dispose();
   }
 
-  void _login() {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || !email.contains('@')) {
-      _showMessage('Please enter a valid email.');
+  void submit() {
+    final emailError = Validators.email(email.text);
+    final passwordError = Validators.password(password.text);
+    if (emailError != null || passwordError != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(emailError ?? passwordError!)));
       return;
     }
-
-    if (password.length < 6) {
-      _showMessage('Password must be at least 6 characters.');
-      return;
-    }
-
-    context.read<AuthCubit>().login(email: email, password: password);
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    context.read<AuthCubit>().login(
+      email: email.text.trim(),
+      password: password.text,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
     return Scaffold(
       body: SafeArea(
-        child: BlocListener<AuthCubit, AuthState>(
-          listener: (context, state) {
-            if (state is AuthError) {
-              _showMessage(state.message);
-            }
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: constraints.maxWidth > 600
-                        ? constraints.maxWidth * 0.25
-                        : 24,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: width > 700 ? width * .25 : 24,
+              vertical: 32,
+            ),
+            child: BlocListener<AuthCubit, AuthState>(
+              listener: (context, state) {
+                if (state is AuthError) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(state.message)));
+                }
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const BrandHeader(),
+                  const SizedBox(height: 32),
+                  AuthTextField(
+                    controller: email,
+                    label: 'Email',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.people_alt_rounded, size: 80),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'ConnectMe',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  const SizedBox(height: 14),
+                  AuthTextField(
+                    controller: password,
+                    label: 'Password',
+                    icon: Icons.lock_outline,
+                    obscureText: obscure,
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => obscure = !obscure),
+                      icon: Icon(
+                        obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                       ),
-                      const SizedBox(height: 8),
-                      const Text('Connect with your community'),
-                      const SizedBox(height: 40),
-                      AuthTextField(
-                        controller: _emailController,
-                        label: 'Email',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      AuthTextField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        icon: Icons.lock_outline,
-                        obscureText: true,
-                      ),
-                      const SizedBox(height: 24),
-                      BlocBuilder<AuthCubit, AuthState>(
-                        builder: (context, state) {
-                          final loading = state is AuthLoading;
-
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: FilledButton(
-                              onPressed: loading ? null : _login,
-                              child: loading
-                                  ? const CircularProgressIndicator()
-                                  : const Text('Login'),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text("Don't have an account? Sign Up"),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                  const SizedBox(height: 24),
+                  BlocBuilder<AuthCubit, AuthState>(
+                    builder: (context, state) => SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: state is AuthLoading ? null : submit,
+                        child: state is AuthLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Log In'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                      ),
+                      child: const Text('Don\'t have an account? Sign Up'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

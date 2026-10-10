@@ -4,46 +4,41 @@ class UserBuilder {
   String? _id;
   String? _fullName;
   String? _email;
-  String? _profileImageUrl;
+  String? _profileImageBase64;
 
-  UserBuilder setId(String id) {
-    _id = id;
+  UserBuilder setId(String value) {
+    _id = value;
     return this;
   }
 
-  UserBuilder setFullName(String fullName) {
-    _fullName = fullName;
+  UserBuilder setFullName(String value) {
+    _fullName = value;
     return this;
   }
 
-  UserBuilder setEmail(String email) {
-    _email = email;
+  UserBuilder setEmail(String value) {
+    _email = value;
     return this;
   }
 
-  UserBuilder setProfileImageUrl(String? profileImageUrl) {
-    _profileImageUrl = profileImageUrl;
+  UserBuilder setProfileImageBase64(String? value) {
+    _profileImageBase64 = value;
     return this;
   }
 
   User build() {
-    if (_id == null || _id!.isEmpty) {
-      throw StateError('User id is required.');
-    }
-
+    if (_id == null || _id!.isEmpty) throw StateError('User id is required.');
     if (_fullName == null || _fullName!.isEmpty) {
       throw StateError('User full name is required.');
     }
-
     if (_email == null || _email!.isEmpty) {
       throw StateError('User email is required.');
     }
-
     return User(
       id: _id!,
       fullName: _fullName!,
       email: _email!,
-      profileImageUrl: _profileImageUrl,
+      profileImageBase64: _profileImageBase64,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'injection.dart';
 import 'presentation/blocs/auth_cubit.dart';
@@ -9,9 +10,7 @@ import 'presentation/screens/auth_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   await setupDependencies();
 
   runApp(
@@ -30,19 +29,7 @@ class ConnectMeApp extends StatelessWidget {
     return MaterialApp(
       title: 'ConnectMe',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5267E8)),
-        scaffoldBackgroundColor: const Color(0xFFF7F8FC),
-        inputDecorationTheme: const InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(14)),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
+      theme: AppTheme.light(),
       home: const AuthGate(),
     );
   }

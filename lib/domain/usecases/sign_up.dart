@@ -2,7 +2,7 @@ import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
 
 class SignUp {
-  SignUp({required AuthRepository repository}) : _repository = repository;
+  SignUp({required this._repository});
 
   final AuthRepository _repository;
 

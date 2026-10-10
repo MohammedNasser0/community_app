@@ -2,7 +2,7 @@ import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
 
 class Login {
-  Login({required AuthRepository repository}) : _repository = repository;
+  Login({required this._repository});
 
   final AuthRepository _repository;
 

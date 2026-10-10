@@ -1,94 +1,43 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import '../../domain/entities/post.dart';
+import '../../domain/repositories/post_repository.dart';
+import '../datasources/local_post_datasource.dart';
+import '../datasources/post_remote_datasource.dart';
+import '../models/post_model.dart';
 
-import '../../domain/entities/user.dart';
-import '../../domain/entities/user_builder.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../services/auth_service.dart';
-import '../datasources/user_remote_datasource.dart';
+enum PostRepositoryMode { remote, local }
 
-class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl({
-    required AuthService authService,
-    required UserRemoteDataSource userDataSource,
-  }) : _authService = authService,
-       _userDataSource = userDataSource;
+class PostRepositoryImpl implements PostRepository {
+  PostRepositoryImpl({
+    required this._remoteDataSource,
+    required this._localDataSource,
+    required this._mode,
+  });
 
-  final AuthService _authService;
-  final UserRemoteDataSource _userDataSource;
+  final PostRemoteDataSource _remoteDataSource;
+  final LocalPostDataSource _localDataSource;
+  final PostRepositoryMode _mode;
 
   @override
-  User? get currentUser {
-    final firebaseUser = _authService.currentUser;
-
-    if (firebaseUser == null) {
-      return null;
+  Stream<List<Post>> getPosts() async* {
+    if (_mode == PostRepositoryMode.local) {
+      yield await _localDataSource.getPosts();
+      return;
     }
 
-    return UserBuilder()
-        .setId(firebaseUser.uid)
-        .setFullName(firebaseUser.displayName ?? '')
-        .setEmail(firebaseUser.email ?? '')
-        .build();
+    yield* _remoteDataSource.watchPosts().asyncMap((posts) async {
+      await _localDataSource.savePosts(posts);
+      return posts;
+    });
   }
 
   @override
-  Future<User> login({required String email, required String password}) async {
-    final credential = await _authService.signIn(
-      email: email,
-      password: password,
-    );
-
-    final firebaseUser = credential.user;
-
-    if (firebaseUser == null) {
-      throw Exception('Unable to retrieve user information.');
-    }
-
-    final storedUser = await _userDataSource.getUser(firebaseUser.uid);
-
-    if (storedUser != null) {
-      return storedUser;
-    }
-
-    return UserBuilder()
-        .setId(firebaseUser.uid)
-        .setFullName(firebaseUser.displayName ?? '')
-        .setEmail(firebaseUser.email ?? email)
-        .build();
-  }
+  Future<List<Post>> getCachedPosts() => _localDataSource.getPosts();
 
   @override
-  Future<User> signUp({
-    required String fullName,
-    required String email,
-    required String password,
-  }) async {
-    final credential = await _authService.signUp(
-      email: email,
-      password: password,
-    );
-
-    final firebaseUser = credential.user;
-
-    if (firebaseUser == null) {
-      throw Exception('Unable to create user.');
+  Future<void> createPost(Post post) async {
+    if (_mode == PostRepositoryMode.local) {
+      throw StateError('Local post repository is read-only.');
     }
-
-    await firebaseUser.updateDisplayName(fullName);
-
-    final user = UserBuilder()
-        .setId(firebaseUser.uid)
-        .setFullName(fullName)
-        .setEmail(email)
-        .build();
-
-    await _userDataSource.createUser(user);
-
-    return user;
-  }
-
-  @override
-  Future<void> logout() {
-    return _authService.signOut();
+    await _remoteDataSource.createPost(PostModel.fromEntity(post));
   }
 }
