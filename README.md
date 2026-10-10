@@ -245,7 +245,7 @@ The original kit contains 30 mobile social-app screens and is presented as a fre
 - [ ] `dart format .` passes.
 - [ ] `flutter analyze` has no warnings/errors.
 - [ ] Release APK builds successfully.
-- [ ] Firebase App Distribution has at least two testers.
+- [x] Firebase App Distribution release distributed to two tester addresses.
 - [ ] Both testers accepted the invitation and installed the build.
 - [ ] Eight required screenshots are captured and added to `docs/screenshots/`.
 - [ ] README screenshots section updated with the real evidence.
@@ -258,4 +258,4 @@ Fixed the composer route to share its PostCubit, retained the draft after failed
 
 Three automated tests cover signup constraints, corrupt-cache recovery and post-cache round trips. Real-device biometric, Maps and Firebase integration evidence still requires execution against the intended configured project.
 
-Release currently uses the Android debug signing key for beta testing. Configure a private release keystore before production delivery. GitHub publishing and tester invitation/install evidence have not been completed.
+Release currently uses the Android debug signing key for beta testing. Configure a private release keystore before production delivery. GitHub publishing is pending explicit approval. Firebase upload and distribution to two supplied tester addresses succeeded; tester acceptance and installation remain unverified. See [beta distribution record](docs/beta-distribution.md).
